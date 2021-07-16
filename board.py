@@ -1,5 +1,5 @@
 import copy
-
+import time
 import pygame
 import requests as requests
 
@@ -8,20 +8,22 @@ grid = response.json()['board']
 
 
 class board:
-    def __init__(self, windows):
+    def __init__(self):
         self.tries = 0
-        self.windows = windows
-        self.font = pygame.font.SysFont('Comic Sans MS', 35)
-        # self.board = [[0, 8, 0, 4, 0, 0, 0, 6, 0],
-        #               [0, 2, 0, 0, 0, 0, 3, 5, 9],
-        #               [0, 0, 3, 0, 0, 2, 0, 0, 0],
-        #               [8, 0, 5, 0, 6, 0, 0, 0, 0],
-        #               [0, 0, 0, 7, 0, 3, 0, 0, 0],
-        #               [0, 0, 0, 0, 9, 0, 6, 0, 1],
-        #               [0, 0, 0, 3, 0, 0, 1, 0, 0],
-        #               [3, 5, 6, 0, 0, 0, 0, 4, 0],
-        #               [0, 4, 0, 0, 0, 9, 0, 2, 0]]
-        self.board = grid
+        # self.windows = windows
+        # self.font = pygame.font.SysFont('Comic Sans MS', 35)
+        self.board = [[0, 0, 0,   0, 0, 0,   9, 0, 0],
+                 [0, 2, 0,   0, 0, 0,   0, 0, 0],
+                 [0, 0, 0,   0, 7, 0,   0, 0, 0],
+
+                 [0, 0, 0,   0, 3, 0,   0, 0, 0],
+                 [3, 0, 0,   0, 0, 7,   0, 0, 5],
+                 [0, 0, 0,   0, 0, 0,   3, 4, 6],
+
+                 [0, 0, 1,   2, 0, 0,   0, 0, 7],
+                 [6, 5, 0,   9, 8, 1,   4, 0, 2],
+                 [0, 8, 0,   0, 0, 3,   6, 5, 0], ]
+        # self.board = grid
 
     def draw_cell(self, color, x, y, value):
         if not value:
@@ -32,7 +34,8 @@ class board:
         word = self.font.render(str(self.tries), False, (0, 0, 0))
         pygame.draw.rect(self.windows, 'white', (0, 0, 200, 45))
         self.windows.blit(word, (0, 0))
-        pygame.display.update()
+        if self.tries % 100 == 0:
+            pygame.display.update()
 
     def print_board(self):
         for row in self.board:
@@ -60,11 +63,10 @@ class board:
         else:
             color1 = (0, 255, 0)
         for num in range(1, 10):
-            self.tries += 1
             if self.board[y][x] + num < 10:
                 if self.is_valid(self.board[y][x] + num, x, y):
                     self.board[y][x] += num
-                    self.draw_cell(color1, x, y, self.board[y][x])
+                    # self.draw_cell(color1, x, y, self.board[y][x])
                     break
         else:
             return False
@@ -84,24 +86,38 @@ class board:
                     return True
                 if temp[cursor_y][cursor_x]:
                     cursor_x += 1
+                    self.tries += 1
                     continue
                 if self.loop(cursor_x, cursor_y, False):
                     cursor_x += 1
+                    self.tries += 1
                 else:
                     backtrack = True
             while backtrack:
                 cursor_x -= 1
+                self.tries += 1
                 if cursor_x == -1:
                     cursor_x = 9
                     cursor_y -= 1
                     continue
                 if cursor_y == -1:
+                    self.tries += 1
                     return False
                 if temp[cursor_y][cursor_x]:
                     continue
                 if not self.loop(cursor_x, cursor_y, True):
                     self.board[cursor_y][cursor_x] = 0
-                    self.draw_cell((0, 0, 0), cursor_x, cursor_y, ' ')
+                    # self.draw_cell((0, 0, 0), cursor_x, cursor_y, ' ')
                     continue
                 cursor_x += 1
+                self.tries += 1
                 backtrack = False
+
+
+bd = board()
+bd.print_board()
+start = time.time()
+bd.solve()
+end = time.time()
+print(f"Used {end - start}s and {bd.tries} tries")
+bd.print_board()
